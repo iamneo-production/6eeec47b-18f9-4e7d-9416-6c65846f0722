@@ -1,29 +1,68 @@
 package com.examly.springapp;
-import com.examly.springapp.entity.Student;
+import java.util.List;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
+import com.examly.springapp.Model.Address;
+import com.examly.springapp.Model.Person;
+
 public class SpringappApplication {
-    public static void main(String[] args) {
-        SessionFactory sessionFactory = Hibernateutil.getSessionFactory();
-        Session session = sessionFactory.openSession(); // Open a new session
-        try {
-            session.beginTransaction();
-            Student student = new Student();
-            student.setFirstName("Vikram");
-            student.setLastName("V");
-            student.setEmail("vikram@example.com");
-            session.save(student);
-            session.getTransaction().commit();
-            session.beginTransaction();
-            int studentId = student.getId();
-            Student retrievedStudent = session.get(Student.class, studentId);
-            System.out.println("Retrieved Student:");
-            System.out.println("ID: " + retrievedStudent.getId());
-            System.out.println("First Name: " + retrievedStudent.getFirstName());
-            System.out.println("Last Name: " + retrievedStudent.getLastName());
-            System.out.println("Email: " + retrievedStudent.getEmail());
-            session.getTransaction().commit();
-        } finally {
-            session.close();
-                     Hibernateutil.closeSessionFactory();        }    }}
+public static void main(String[] args) {
+// Create a Hibernate session factory
+SessionFactory sessionFactory = new Configuration()
+.configure("hibernate.cfg.xml")
+.addAnnotatedClass(Person.class)
+.addAnnotatedClass(Address.class)
+.buildSessionFactory();
+
+// Create a Hibernate session
+
+Session session = sessionFactory.openSession();
+
+try {
+// Begin a transaction
+session.beginTransaction();
+
+// Create a person and an address
+Person person = new Person("John Doe");
+Address address = new Address("123 Main St", "Cityville");
+
+// Associate the address with the person
+person.setAddress(address);
+address.setPerson(person);
+
+// Save the person (and cascade the address)
+session.save(person);
+
+// Commit the transaction
+session.getTransaction().commit();
+
+// Display data
+displayData(session);
+} finally {
+// Clean up resources
+session.close();
+sessionFactory.close();
+}
+}
+
+private static void displayData(Session session) {
+// Retrieve and display data
+System.out.println("Displaying Data:");
+session.beginTransaction();
+
+// Query to fetch all persons
+List<Person> persons = session.createQuery("from Person", Person.class).getResultList();
+
+for (Person person : persons) {
+System.out.println("Person: " + person.getName());
+
+Address address = person.getAddress();
+System.out.println("Address: " + address.getStreet() + ", " + address.getCity());
+}
+
+session.getTransaction().commit();
+}
+}
