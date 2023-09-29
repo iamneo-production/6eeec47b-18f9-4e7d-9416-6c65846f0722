@@ -1,3 +1,5 @@
 com/examly/springapp/Hibernateutil.class
 com/examly/springapp/SpringappApplication.class
 com/examly/springapp/entity/Student.class
+com/examly/springapp/Model/Address.class
+com/examly/springapp/Model/Person.class
